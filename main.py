@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import URL
-from db_setup import Socio, EstadoCuenta  # Importamos los modelos que creaste
 from db_setup import Socio, EstadoCuenta, Reserva  # <--- Agrega Reserva aquí
 
 # --- 1. CONFIGURACIÓN DE BASE DE DATOS ---

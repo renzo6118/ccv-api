@@ -151,7 +151,7 @@ def consultar_mis_reservas(id_socio: int, db: Session = Depends(get_db)):
     """ Operación de SALIDA: Obtiene el historial de reservas de un socio """
     reservas = db.query(Reserva).filter(Reserva.id_socio == id_socio).all()
     
-    # Formatear la respuesta para el frontend
+    # Formateamos la respuesta
     resultado = []
     for r in reservas:
         resultado.append({

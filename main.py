@@ -65,6 +65,10 @@ class ReservaDTO(BaseModel):
     horaInicio: str
     horaFin: str
 
+class PagoDTO(BaseModel):
+    idSocio: int
+    numeroTarjeta: str
+
 class ResetPasswordDTO(BaseModel):
     usuario: str
     nuevaPassword: str
@@ -116,6 +120,31 @@ def consultar_estado_cuenta(id_socio: int, db: Session = Depends(get_db)):
         "id_socio": id_socio,
         "deuda_total": deuda_total,
         "detalle_cuentas": detalle
+    }
+
+@app.post("/finanzas/registrarPago", tags=["Servicio: Estado Financiero"])
+def registrar_pago(pago: PagoDTO, db: Session = Depends(get_db)):
+    """ Operación de ENTRADA: Simula pasarela de pagos y cancela la deuda """
+    
+    # 1. Buscamos todas las cuentas pendientes del socio
+    cuentas_pendientes = db.query(EstadoCuenta).filter(
+        EstadoCuenta.id_socio == pago.idSocio,
+        EstadoCuenta.estado_pago == 'Pendiente'
+    ).all()
+    
+    if not cuentas_pendientes:
+        raise HTTPException(status_code=400, detail="El socio no tiene deuda pendiente.")
+    
+    # 2. Actualizamos el estado a 'Pagado'
+    for cuenta in cuentas_pendientes:
+        cuenta.estado_pago = 'Pagado'
+        
+    db.commit()
+    
+    return {
+        "mensaje": "¡Pago procesado exitosamente!",
+        "codigoTransaccion": f"TXN-2026-{pago.idSocio}998",
+        "tarjetaUsada": f"**** **** **** {pago.numeroTarjeta[-4:]}"
     }
 
 @app.post("/reservas/registrarReserva", tags=["Servicio: Reservas"])

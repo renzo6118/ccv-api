@@ -146,7 +146,7 @@ def registrar_reserva(reserva: ReservaDTO, db: Session = Depends(get_db)):
         "mensaje": "¡Reserva registrada exitosamente!"
     }
 
-@app.put("/autenticacion/actualizarPassword", tags=["Servicio: Autenticación"], include_in_schema=False)
+@app.put("/autenticacion/actualizarPassword", tags=["Servicio: Autenticación"])
 def actualizar_password(datos: ResetPasswordDTO, db: Session = Depends(get_db)):
     """ Actualiza la contraseña de un socio en la base de datos """
     socio = db.query(Socio).filter(Socio.usuario == datos.usuario).first()

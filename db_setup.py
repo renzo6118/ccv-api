@@ -76,3 +76,4 @@ class Reserva(Base):
     fecha = Column(Date, nullable=False)
     horario = Column(String(20), nullable=False)
     estado = Column(String(20), default='Confirmado')
+    

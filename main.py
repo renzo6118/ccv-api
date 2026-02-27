@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import URL
 from db_setup import Socio, EstadoCuenta  # Importamos los modelos que creaste
+from db_setup import Socio, EstadoCuenta, Reserva  # <--- Agrega Reserva aquí
 
 # --- 1. CONFIGURACIÓN DE BASE DE DATOS ---
 load_dotenv()
@@ -65,6 +66,10 @@ class ReservaDTO(BaseModel):
     horaInicio: str
     horaFin: str
 
+class ResetPasswordDTO(BaseModel):
+    usuario: str
+    nuevaPassword: str
+
 # --- 4. SERVICIOS (ENDPOINTS) ---
 
 @app.post("/autenticacion/autenticarSocio", tags=["Servicio: Autenticación"])
@@ -115,10 +120,41 @@ def consultar_estado_cuenta(id_socio: int, db: Session = Depends(get_db)):
     }
 
 @app.post("/reservas/registrarReserva", tags=["Servicio: Reservas"])
-def registrar_reserva(reserva: ReservaDTO):
-    """ Registra una nueva reserva de instalación """
+def registrar_reserva(reserva: ReservaDTO, db: Session = Depends(get_db)):
+    """ Registra una nueva reserva de instalación en la Base de Datos """
+    
+    # Validar si el socio existe
+    socio = db.query(Socio).filter(Socio.id_socio == reserva.idSocio).first()
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado")
+
+    # Crear la nueva reserva
+    nueva_reserva = Reserva(
+        id_socio=reserva.idSocio,
+        sede=f"Sede ID: {reserva.idInstalacion}", 
+        fecha=reserva.fecha,
+        horario=reserva.horaInicio
+    )
+    
+    db.add(nueva_reserva)
+    db.commit()
+    db.refresh(nueva_reserva)
+    
     return {
-        "codigoReserva": "RES-2026-0899",
+        "codigoReserva": f"RES-2026-0{nueva_reserva.id_reserva}",
         "estado": "Confirmado",
-        "mensaje": f"Reserva registrada exitosamente para el socio {reserva.idSocio}."
+        "mensaje": "¡Reserva registrada exitosamente!"
     }
+
+@app.put("/autenticacion/actualizarPassword", tags=["Servicio: Autenticación"])
+def actualizar_password(datos: ResetPasswordDTO, db: Session = Depends(get_db)):
+    """ Actualiza la contraseña de un socio en la base de datos """
+    socio = db.query(Socio).filter(Socio.usuario == datos.usuario).first()
+    
+    if not socio:
+        raise HTTPException(status_code=404, detail="Socio no encontrado")
+    
+    socio.password = datos.nuevaPassword
+    db.commit()
+    
+    return {"mensaje": "Contraseña actualizada exitosamente"}

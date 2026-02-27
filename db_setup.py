@@ -66,3 +66,13 @@ def crear_tablas():
 
 if __name__ == "__main__":
     crear_tablas()
+
+    # (Pon esto al final de db_setup.py)
+class Reserva(Base):
+    __tablename__ = "t_reservas"
+    id_reserva = Column(Integer, primary_key=True, index=True)
+    id_socio = Column(Integer, nullable=False)
+    sede = Column(String(50), nullable=False)
+    fecha = Column(Date, nullable=False)
+    horario = Column(String(20), nullable=False)
+    estado = Column(String(20), default='Confirmado')

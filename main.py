@@ -146,6 +146,24 @@ def registrar_reserva(reserva: ReservaDTO, db: Session = Depends(get_db)):
         "mensaje": "¡Reserva registrada exitosamente!"
     }
 
+@app.get("/reservas/misReservas/{id_socio}", tags=["Servicio: Reservas"])
+def consultar_mis_reservas(id_socio: int, db: Session = Depends(get_db)):
+    """ Operación de SALIDA: Obtiene el historial de reservas de un socio """
+    reservas = db.query(Reserva).filter(Reserva.id_socio == id_socio).all()
+    
+    # Formatear la respuesta para el frontend
+    resultado = []
+    for r in reservas:
+        resultado.append({
+            "id_reserva": r.id_reserva,
+            "sede": r.sede,
+            "fecha": str(r.fecha),
+            "horario": r.horario,
+            "estado": r.estado
+        })
+        
+    return {"reservas": resultado}
+
 @app.put("/autenticacion/actualizarPassword", tags=["Servicio: Autenticación"])
 def actualizar_password(datos: ResetPasswordDTO, db: Session = Depends(get_db)):
     """ Actualiza la contraseña de un socio en la base de datos """

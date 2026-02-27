@@ -36,10 +36,21 @@ def get_db():
         db.close()
 
 # --- 2. INICIALIZAR FASTAPI ---
+from fastapi.middleware.cors import CORSMiddleware  # <-- Importante agregar esto
+
 app = FastAPI(
     title="CCV API - Arquitectura SOA",
     description="Implementación de servicios REST para Gestión de procesos del Country Club de Villa.",
     version="1.0.0"
+)
+
+# --- CONFIGURACIÓN DE CORS (El permiso para tu web) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # El asterisco permite que cualquier web entre
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- 3. DTOs (Modelos de Entrada y Salida para Swagger) ---

@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import URL
-from db_setup import Socio, EstadoCuenta, Reserva  # <--- Agrega Reserva aquí
+from db_setup import Socio, EstadoCuenta, Reserva  
 
-# --- 1. CONFIGURACIÓN DE BASE DE DATOS ---
+# CONFIGURACIÓN DE BASE DE DATOS
 load_dotenv()
 host = os.getenv("DB_HOST").strip("'\" ")
 port = int(os.getenv("DB_PORT").strip("'\" "))
@@ -35,8 +35,8 @@ def get_db():
     finally:
         db.close()
 
-# --- 2. INICIALIZAR FASTAPI ---
-from fastapi.middleware.cors import CORSMiddleware  # <-- Importante agregar esto
+# FASTAPI
+from fastapi.middleware.cors import CORSMiddleware  
 
 app = FastAPI(
     title="CCV API - Arquitectura SOA",
@@ -44,16 +44,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# --- CONFIGURACIÓN DE CORS (El permiso para tu web) ---
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # El asterisco permite que cualquier web entre
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- 3. DTOs (Modelos de Entrada y Salida para Swagger) ---
+# DTOs
 class CredencialesDTO(BaseModel):
     usuario: str
     password: str
@@ -73,7 +73,7 @@ class ResetPasswordDTO(BaseModel):
     usuario: str
     nuevaPassword: str
 
-# --- 4. SERVICIOS (ENDPOINTS) ---
+# SERVICIOS
 
 @app.post("/autenticacion/autenticarSocio", tags=["Servicio: Autenticación"])
 def autenticar_socio(credenciales: CredencialesDTO, db: Session = Depends(get_db)):
@@ -126,7 +126,7 @@ def consultar_estado_cuenta(id_socio: int, db: Session = Depends(get_db)):
 def registrar_pago(pago: PagoDTO, db: Session = Depends(get_db)):
     """ Operación de ENTRADA: Simula pasarela de pagos y cancela la deuda """
     
-    # 1. Buscamos todas las cuentas pendientes del socio
+ 
     cuentas_pendientes = db.query(EstadoCuenta).filter(
         EstadoCuenta.id_socio == pago.idSocio,
         EstadoCuenta.estado_pago == 'Pendiente'
@@ -135,7 +135,7 @@ def registrar_pago(pago: PagoDTO, db: Session = Depends(get_db)):
     if not cuentas_pendientes:
         raise HTTPException(status_code=400, detail="El socio no tiene deuda pendiente.")
     
-    # 2. Actualizamos el estado a 'Pagado'
+
     for cuenta in cuentas_pendientes:
         cuenta.estado_pago = 'Pagado'
         
@@ -151,12 +151,12 @@ def registrar_pago(pago: PagoDTO, db: Session = Depends(get_db)):
 def registrar_reserva(reserva: ReservaDTO, db: Session = Depends(get_db)):
     """ Registra una nueva reserva de instalación en la Base de Datos """
     
-    # Validar si el socio existe
+
     socio = db.query(Socio).filter(Socio.id_socio == reserva.idSocio).first()
     if not socio:
         raise HTTPException(status_code=404, detail="Socio no encontrado")
 
-    # Crear la nueva reserva
+ 
     nueva_reserva = Reserva(
         id_socio=reserva.idSocio,
         sede=f"Sede ID: {reserva.idInstalacion}", 
@@ -179,7 +179,7 @@ def consultar_mis_reservas(id_socio: int, db: Session = Depends(get_db)):
     """ Operación de SALIDA: Obtiene el historial de reservas de un socio """
     reservas = db.query(Reserva).filter(Reserva.id_socio == id_socio).all()
     
-    # Formateamos la respuesta
+    
     resultado = []
     for r in reservas:
         resultado.append({

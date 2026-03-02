@@ -3,19 +3,18 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Numeric, text
 from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.engine import URL # <-- Importación nueva y salvadora
+from sqlalchemy.engine import URL 
 
-# 1. Cargar credenciales del archivo .env
 load_dotenv()
 
-# Limpiamos cualquier comilla (') o espacio invisible que se haya colado
+
 host = os.getenv("DB_HOST").strip("'\" ")
 port = int(os.getenv("DB_PORT").strip("'\" "))
 user = os.getenv("DB_USERNAME").strip("'\" ")
 password = os.getenv("DB_PASSWORD").strip("'\" ")
 database = os.getenv("DB_DATABASE").strip("'\" ")
 
-# 2. Cadena de conexión usando el armador nativo de SQLAlchemy (A prueba de errores)
+
 url_object = URL.create(
     drivername="mysql+pymysql",
     username=user,
@@ -26,11 +25,11 @@ url_object = URL.create(
     query={"ssl_verify_cert": "true", "ssl_verify_identity": "true"}
 )
 
-# 3. Iniciar el motor de SQLAlchemy
+# SQLAlchemy
 engine = create_engine(url_object, echo=True)
 Base = declarative_base()
 
-# --- MODELO: Dominio Servicio de Socios ---
+#  Servicio de Socios 
 class Socio(Base):
     __tablename__ = "t_socios"
     
@@ -46,7 +45,7 @@ class Socio(Base):
     fecha_modifica = Column(DateTime, server_default=text('NOW() ON UPDATE NOW()'))
     activo_sn = Column(TINYINT(1), server_default=text('1'))
 
-# --- MODELO: Dominio Servicio de Estado de Cuenta ---
+# Servicio de Estado de Cuenta
 class EstadoCuenta(Base):
     __tablename__ = "t_estado_cuenta"
     
@@ -58,7 +57,7 @@ class EstadoCuenta(Base):
     u_actualizacion = Column(DateTime, server_default=text('NOW() ON UPDATE NOW()'))
     u_modifica = Column(String(50))
 
-# --- FUNCIÓN PARA CREAR TABLAS ---
+
 def crear_tablas():
     print("Conectando a TiDB Serverless de forma segura...")
     Base.metadata.create_all(bind=engine)
@@ -67,7 +66,7 @@ def crear_tablas():
 if __name__ == "__main__":
     crear_tablas()
 
-    # (Pon esto al final de db_setup.py)
+ 
 class Reserva(Base):
     __tablename__ = "t_reservas"
     id_reserva = Column(Integer, primary_key=True, index=True)
